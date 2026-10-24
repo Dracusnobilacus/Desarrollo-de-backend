@@ -1,16 +1,16 @@
 package com.fube.clientes.modelos;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "clientes")
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class Cliente {
 
@@ -27,10 +27,19 @@ public class Cliente {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(name = "fecha_alta")
+    private LocalDateTime fechaAlta;
+
     @Column
     private String telefono;
 
     @Column
     private String direccion;
 
+    @PrePersist
+    public void prePersist() {
+        if (fechaAlta == null) {
+            fechaAlta = LocalDateTime.now();
+        }
+    }
 }
