@@ -1,6 +1,7 @@
 package com.fube.clientes.servicios;
 
 import com.fube.clientes.dto.ClienteDTO;
+import com.fube.clientes.dto.PedidoDTO;
 import com.fube.clientes.modelos.Cliente;
 
 import java.util.List;
@@ -12,4 +13,5 @@ public interface ClienteServicio {
     List<ClienteDTO> buscarTodos();
     ClienteDTO actualizar(Cliente cliente);
     void eliminar(Long id);
+    List<PedidoDTO> buscarPedidosPorCliente(Long clienteId);
 }

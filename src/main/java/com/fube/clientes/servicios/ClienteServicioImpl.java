@@ -1,6 +1,7 @@
 package com.fube.clientes.servicios;
 
 import com.fube.clientes.dto.ClienteDTO;
+import com.fube.clientes.dto.PedidoDTO;
 import com.fube.clientes.mapper.ClienteMapper;
 import com.fube.clientes.modelos.Cliente;
 import com.fube.clientes.repositorio.ClienteRepositorio;
@@ -13,10 +14,12 @@ public class ClienteServicioImpl implements ClienteServicio {
 
     private final ClienteRepositorio repositorio;
     private final StatsigService statsigService;
+    private final PedidoClient pedidoClient;
 
-    public ClienteServicioImpl(ClienteRepositorio repositorio, StatsigService statsigService) {
+    public ClienteServicioImpl(ClienteRepositorio repositorio, StatsigService statsigService, PedidoClient pedidoClient) {
         this.repositorio = repositorio;
         this.statsigService = statsigService;
+        this.pedidoClient = pedidoClient;
     }
 
     @Override
@@ -93,4 +96,13 @@ public class ClienteServicioImpl implements ClienteServicio {
     public void eliminar(Long id) {
         repositorio.deleteById(id);
     }
+
+    @Override
+    public List<PedidoDTO> buscarPedidosPorCliente(Long clienteId) {
+        if (!repositorio.existsById(clienteId)) {
+            throw new RuntimeException("Cliente no encontrado con id: " + clienteId);
+        }
+        return pedidoClient.obtenerPedidosPorCliente(clienteId);
+    }
 }
+

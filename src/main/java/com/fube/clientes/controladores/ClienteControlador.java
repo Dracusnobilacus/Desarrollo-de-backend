@@ -53,4 +53,11 @@ public class ClienteControlador {
     public void eliminar(@PathVariable Long id) {
         servicio.eliminar(id);
     }
+
+    @GetMapping("/{id}/pedidos")
+    @Operation(summary = "Consultar pedidos de un cliente", description = "Retorna los pedidos de un cliente determinado consultando de forma síncrona a servicio-pedidos")
+    public List<com.fube.clientes.dto.PedidoDTO> buscarPedidosPorCliente(@PathVariable Long id) {
+        return servicio.buscarPedidosPorCliente(id);
+    }
 }
+
