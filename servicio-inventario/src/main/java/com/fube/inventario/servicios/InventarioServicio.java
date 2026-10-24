@@ -60,4 +60,38 @@ public class InventarioServicio {
 
         return ReservaMapper.toDTO(guardada);
     }
+
+    @Transactional
+    public ReservaResponseDTO liberarReserva(Long reservaId) {
+        Reserva reserva = reservaRepositorio.findById(reservaId)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Reserva no encontrada con ID: " + reservaId));
+
+        if (reserva.getEstado() == EstadoReserva.ACTIVA) {
+            reserva.setEstado(EstadoReserva.LIBERADA);
+            Producto producto = reserva.getProducto();
+            producto.setCantidadDisponible(producto.getCantidadDisponible() + reserva.getCantidad());
+            productoRepositorio.save(producto);
+            reservaRepositorio.save(reserva);
+        }
+
+        return ReservaMapper.toDTO(reserva);
+    }
+
+    @Transactional
+    public List<ReservaResponseDTO> liberarReservasPorPedido(Long pedidoId) {
+        List<Reserva> reservasActivas = reservaRepositorio.findByPedidoIdAndEstado(pedidoId, EstadoReserva.ACTIVA);
+
+        for (Reserva reserva : reservasActivas) {
+            reserva.setEstado(EstadoReserva.LIBERADA);
+            Producto producto = reserva.getProducto();
+            producto.setCantidadDisponible(producto.getCantidadDisponible() + reserva.getCantidad());
+            productoRepositorio.save(producto);
+            reservaRepositorio.save(reserva);
+        }
+
+        return reservasActivas.stream()
+                .map(ReservaMapper::toDTO)
+                .toList();
+    }
 }
+
