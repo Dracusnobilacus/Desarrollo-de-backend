@@ -2,6 +2,7 @@ package com.fube.clientes.servicios;
 
 import com.fube.clientes.dto.ClienteDTO;
 import com.fube.clientes.dto.PedidoDTO;
+import com.fube.clientes.excepciones.ClienteNoEncontradoException;
 import com.fube.clientes.mapper.ClienteMapper;
 import com.fube.clientes.modelos.Cliente;
 import com.fube.clientes.repositorio.ClienteRepositorio;
@@ -30,7 +31,7 @@ public class ClienteServicioImpl implements ClienteServicio {
     @Override
     public ClienteDTO buscarPorId(Long id) {
         Cliente cliente = repositorio.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cliente no encontrado con id: " + id));
+                .orElseThrow(() -> new ClienteNoEncontradoException(id));
 
         ClienteDTO dto = ClienteMapper.toDTO(cliente);
 
@@ -100,7 +101,7 @@ public class ClienteServicioImpl implements ClienteServicio {
     @Override
     public List<PedidoDTO> buscarPedidosPorCliente(Long clienteId) {
         if (!repositorio.existsById(clienteId)) {
-            throw new RuntimeException("Cliente no encontrado con id: " + clienteId);
+            throw new ClienteNoEncontradoException(clienteId);
         }
         return pedidoClient.obtenerPedidosPorCliente(clienteId);
     }

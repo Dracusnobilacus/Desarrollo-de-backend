@@ -30,4 +30,14 @@ public class Cliente {
 
     @Column
     private String direccion;
+
+    @Column(name = "fecha_alta", nullable = false, updatable = false)
+    private java.time.LocalDateTime fechaAlta;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.fechaAlta == null) {
+            this.fechaAlta = java.time.LocalDateTime.now();
+        }
+    }
 }

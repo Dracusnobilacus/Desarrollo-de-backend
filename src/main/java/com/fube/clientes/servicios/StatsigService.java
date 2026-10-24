@@ -25,7 +25,11 @@ public class StatsigService {
     @PostConstruct
     public void init() {
         try {
-            if (serverSecretKey != null && !serverSecretKey.isBlank() && !serverSecretKey.equals("secret-key-placeholder")) {
+            boolean isConfigured = serverSecretKey != null
+                    && !serverSecretKey.isBlank()
+                    && !serverSecretKey.contains("placeholder");
+
+            if (isConfigured) {
                 Statsig.initializeAsync(serverSecretKey).get(3, TimeUnit.SECONDS);
                 log.info("Statsig inicializado correctamente.");
             } else {

@@ -5,6 +5,7 @@ import com.fube.clientes.mapper.ClienteMapper;
 import com.fube.clientes.servicios.ClienteServicio;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,7 @@ public class ClienteControlador {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Registrar un cliente", description = "Crea un nuevo cliente y retorna el cliente registrado")
-    public ClienteDTO crear(@RequestBody ClienteDTO clienteDTO) {
+    public ClienteDTO crear(@Valid @RequestBody ClienteDTO clienteDTO) {
         return servicio.crear(ClienteMapper.toEntity(clienteDTO));
     }
 
@@ -42,7 +43,7 @@ public class ClienteControlador {
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar cliente", description = "Actualiza los datos de un cliente existente por ID")
-    public ClienteDTO actualizar(@PathVariable Long id, @RequestBody ClienteDTO clienteDTO) {
+    public ClienteDTO actualizar(@PathVariable Long id, @Valid @RequestBody ClienteDTO clienteDTO) {
         clienteDTO.setId(id);
         return servicio.actualizar(ClienteMapper.toEntity(clienteDTO));
     }

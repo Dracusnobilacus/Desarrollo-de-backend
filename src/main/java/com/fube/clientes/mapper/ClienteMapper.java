@@ -6,7 +6,9 @@ import com.fube.clientes.modelos.Cliente;
 public class ClienteMapper {
 
     public static ClienteDTO toDTO(Cliente cliente) {
-
+        if (cliente == null) {
+            return null;
+        }
         return ClienteDTO.builder()
                 .id(cliente.getId())
                 .nombre(cliente.getNombre())
@@ -14,11 +16,14 @@ public class ClienteMapper {
                 .email(cliente.getEmail())
                 .telefono(cliente.getTelefono())
                 .direccion(cliente.getDireccion())
+                .fechaAlta(cliente.getFechaAlta())
                 .build();
-
     }
 
     public static Cliente toEntity(ClienteDTO dto) {
+        if (dto == null) {
+            return null;
+        }
         return Cliente.builder()
                 .id(dto.getId())
                 .nombre(dto.getNombre())
@@ -26,6 +31,7 @@ public class ClienteMapper {
                 .email(dto.getEmail())
                 .telefono(dto.getTelefono())
                 .direccion(dto.getDireccion())
+                .fechaAlta(dto.getFechaAlta())
                 .build();
     }
 }
