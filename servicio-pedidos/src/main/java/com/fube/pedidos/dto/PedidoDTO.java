@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -17,8 +19,10 @@ public class PedidoDTO {
 
     private Long id;
     private Long clienteId;
-    private LocalDateTime fechaCreacion;
     private EstadoPedido estado;
-    private BigDecimal total;
-    private String descripcion;
+    private BigDecimal montoTotal;
+    private LocalDateTime fechaCreacion;
+    private LocalDateTime fechaActualizacion;
+    @Builder.Default
+    private List<ItemPedidoDTO> items = new ArrayList<>();
 }

@@ -3,6 +3,7 @@ package com.fube.pedidos.servicios;
 import com.fube.pedidos.dto.PedidoDTO;
 import com.fube.pedidos.mapper.PedidoMapper;
 import com.fube.pedidos.modelos.EstadoPedido;
+import com.fube.pedidos.modelos.ItemPedido;
 import com.fube.pedidos.modelos.Pedido;
 import com.fube.pedidos.repositorio.PedidoRepositorio;
 import org.springframework.stereotype.Service;
@@ -69,14 +70,17 @@ public class PedidoServicioImpl implements PedidoServicio {
         if (pedido.getEstado() != null) {
             existente.setEstado(pedido.getEstado());
         }
-        if (pedido.getTotal() != null) {
-            existente.setTotal(pedido.getTotal());
+        if (pedido.getMontoTotal() != null) {
+            existente.setMontoTotal(pedido.getMontoTotal());
         }
-        if (pedido.getDescripcion() != null) {
-            existente.setDescripcion(pedido.getDescripcion());
-        }
-        if (pedido.getFechaCreacion() != null) {
-            existente.setFechaCreacion(pedido.getFechaCreacion());
+        if (pedido.getItems() != null && !pedido.getItems().isEmpty()) {
+            existente.getItems().clear();
+            for (ItemPedido item : pedido.getItems()) {
+                existente.addItem(item);
+            }
+            if (pedido.getMontoTotal() == null) {
+                existente.calcularMontoTotal();
+            }
         }
 
         return PedidoMapper.toDTO(repositorio.save(existente));

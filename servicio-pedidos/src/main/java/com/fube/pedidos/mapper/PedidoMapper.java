@@ -1,7 +1,12 @@
 package com.fube.pedidos.mapper;
 
+import com.fube.pedidos.dto.ItemPedidoDTO;
 import com.fube.pedidos.dto.PedidoDTO;
+import com.fube.pedidos.modelos.ItemPedido;
 import com.fube.pedidos.modelos.Pedido;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PedidoMapper {
 
@@ -10,13 +15,21 @@ public class PedidoMapper {
             return null;
         }
 
+        List<ItemPedidoDTO> itemsDTO = new ArrayList<>();
+        if (pedido.getItems() != null) {
+            itemsDTO = pedido.getItems().stream()
+                    .map(PedidoMapper::itemToDTO)
+                    .toList();
+        }
+
         return PedidoDTO.builder()
                 .id(pedido.getId())
                 .clienteId(pedido.getClienteId())
-                .fechaCreacion(pedido.getFechaCreacion())
                 .estado(pedido.getEstado())
-                .total(pedido.getTotal())
-                .descripcion(pedido.getDescripcion())
+                .montoTotal(pedido.getMontoTotal())
+                .fechaCreacion(pedido.getFechaCreacion())
+                .fechaActualizacion(pedido.getFechaActualizacion())
+                .items(itemsDTO)
                 .build();
     }
 
@@ -25,13 +38,49 @@ public class PedidoMapper {
             return null;
         }
 
-        return Pedido.builder()
+        Pedido pedido = Pedido.builder()
                 .id(dto.getId())
                 .clienteId(dto.getClienteId())
-                .fechaCreacion(dto.getFechaCreacion())
                 .estado(dto.getEstado())
-                .total(dto.getTotal())
-                .descripcion(dto.getDescripcion())
+                .montoTotal(dto.getMontoTotal())
+                .fechaCreacion(dto.getFechaCreacion())
+                .fechaActualizacion(dto.getFechaActualizacion())
+                .build();
+
+        if (dto.getItems() != null) {
+            for (ItemPedidoDTO itemDto : dto.getItems()) {
+                ItemPedido item = itemToEntity(itemDto);
+                pedido.addItem(item);
+            }
+        }
+
+        return pedido;
+    }
+
+    public static ItemPedidoDTO itemToDTO(ItemPedido item) {
+        if (item == null) {
+            return null;
+        }
+
+        return ItemPedidoDTO.builder()
+                .id(item.getId())
+                .productoId(item.getProductoId())
+                .cantidad(item.getCantidad())
+                .precioUnitario(item.getPrecioUnitario())
+                .subtotal(item.getSubtotal())
+                .build();
+    }
+
+    public static ItemPedido itemToEntity(ItemPedidoDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+
+        return ItemPedido.builder()
+                .id(dto.getId())
+                .productoId(dto.getProductoId())
+                .cantidad(dto.getCantidad())
+                .precioUnitario(dto.getPrecioUnitario())
                 .build();
     }
 }

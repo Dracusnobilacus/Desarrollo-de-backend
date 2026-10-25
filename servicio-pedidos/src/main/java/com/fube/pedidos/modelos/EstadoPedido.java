@@ -1,10 +1,8 @@
 package com.fube.pedidos.modelos;
 
 public enum EstadoPedido {
-    PENDIENTE,
+    CREADO,
     CONFIRMADO,
-    EN_PREPARACION,
-    ENVIADO,
-    ENTREGADO,
-    CANCELADO
+    CANCELADO,
+    EXPIRADO
 }
