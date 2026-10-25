@@ -46,7 +46,7 @@ Las migraciones son gestionadas automáticamente con Flyway al iniciar la aplica
 
 | Versión | Descripción |
 |---------|-------------|
-| `V1` | Creación de la tabla `pedidos` |
+| `V1` | Creación de las tablas `pedidos` e `item_pedidos` con claves foráneas e índices |
 
 ## Cómo correr el proyecto
 
