@@ -180,9 +180,9 @@ public class PedidoServicioImpl implements PedidoServicio {
 
     @Override
     @Transactional(readOnly = true)
-    public PedidoDTO buscarPorId(Long id) {
+    public PedidoResponseDTO buscarPorId(Long id) {
         return repositorio.findById(id)
-                .map(PedidoMapper::toDTO)
+                .map(PedidoMapper::toResponseDTO)
                 .orElseThrow(() -> new RuntimeException("Pedido no encontrado con id: " + id));
     }
 
@@ -196,9 +196,9 @@ public class PedidoServicioImpl implements PedidoServicio {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PedidoDTO> buscarPorClienteId(Long clienteId) {
+    public List<PedidoResponseDTO> buscarPorClienteId(Long clienteId) {
         return repositorio.findByClienteId(clienteId).stream()
-                .map(PedidoMapper::toDTO)
+                .map(PedidoMapper::toResponseDTO)
                 .toList();
     }
 

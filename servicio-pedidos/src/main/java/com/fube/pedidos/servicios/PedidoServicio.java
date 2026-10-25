@@ -16,15 +16,15 @@ public interface PedidoServicio {
 
     PedidoResponseDTO cancelarPedido(Long id);
 
-    PedidoDTO crear(Pedido pedido);
+    PedidoResponseDTO buscarPorId(Long id);
 
-    PedidoDTO buscarPorId(Long id);
+    List<PedidoResponseDTO> buscarPorClienteId(Long clienteId);
 
     List<PedidoDTO> buscarTodos();
 
-    List<PedidoDTO> buscarPorClienteId(Long clienteId);
-
     List<PedidoDTO> buscarPorEstado(EstadoPedido estado);
+
+    PedidoDTO crear(Pedido pedido);
 
     PedidoDTO actualizar(Pedido pedido);
 

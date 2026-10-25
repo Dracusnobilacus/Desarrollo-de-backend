@@ -34,11 +34,21 @@ com.fube.pedidos
 
 | Método | URL | Descripción |
 |--------|-----|-------------|
-| `GET` | `/api/pedidos` | Listar todos los pedidos (filtros opcionales por `clienteId` y `estado`) |
-| `GET` | `/api/pedidos/{id}` | Obtener pedido por ID |
-| `POST` | `/api/pedidos` | Crear nuevo pedido |
-| `PUT` | `/api/pedidos/{id}` | Actualizar pedido existente |
-| `DELETE` | `/api/pedidos/{id}` | Eliminar pedido por ID |
+| `POST` | `/api/pedidos` | Crear nuevo pedido (valida cliente y reserva stock) |
+| `GET` | `/api/pedidos/{id}` | Obtener pedido completo por ID |
+| `GET` | `/api/pedidos/cliente/{clienteId}` | Listar pedidos de un cliente |
+| `PUT` | `/api/pedidos/{id}/cancelar` | Cancelar pedido (en estado CREADO o CONFIRMADO) y liberar stock |
+
+## Documentación OpenAPI (Swagger)
+
+Con la aplicación en ejecución, accedé a la documentación interactiva en:
+```
+http://localhost:8082/swagger-ui.html
+```
+O al documento OpenAPI JSON en:
+```
+http://localhost:8082/v3/api-docs
+```
 
 ## Migraciones de Base de Datos
 
