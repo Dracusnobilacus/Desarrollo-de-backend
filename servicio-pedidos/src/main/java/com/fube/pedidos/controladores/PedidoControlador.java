@@ -21,8 +21,8 @@ public class PedidoControlador {
     }
 
     @PostMapping
-    public ResponseEntity<PedidoDTO> crear(@RequestBody PedidoDTO pedidoDTO) {
-        PedidoDTO creado = servicio.crear(PedidoMapper.toEntity(pedidoDTO));
+    public ResponseEntity<com.fube.pedidos.dto.PedidoResponseDTO> crear(@RequestBody com.fube.pedidos.dto.CrearPedidoRequestDTO request) {
+        com.fube.pedidos.dto.PedidoResponseDTO creado = servicio.crearPedido(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 

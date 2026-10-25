@@ -104,4 +104,26 @@ public class InventarioClient {
                 .items(items)
                 .build());
     }
+
+    /**
+     * Reserva stock para un producto individual.
+     *
+     * @param productoId ID del producto
+     * @param cantidad   Cantidad a reservar
+     * @return true si la reserva fue exitosa
+     */
+    public boolean reservarStockItem(Long productoId, Integer cantidad) {
+        return reservarStock(null, List.of(new ItemStockDTO(productoId, cantidad)));
+    }
+
+    /**
+     * Libera stock para un producto individual.
+     *
+     * @param productoId ID del producto
+     * @param cantidad   Cantidad a liberar
+     * @return true si la liberación fue exitosa
+     */
+    public boolean liberarStockItem(Long productoId, Integer cantidad) {
+        return liberarStock(null, List.of(new ItemStockDTO(productoId, cantidad)));
+    }
 }
