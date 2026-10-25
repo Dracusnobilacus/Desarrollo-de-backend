@@ -129,4 +129,85 @@ class PedidoServicioTest {
         // Verifica que se liberó el stock reservado
         verify(inventarioClient).liberarStockItem(101L, 2);
     }
+
+    @Test
+    void testCancelarPedido_EstadoCreado_Exitoso() {
+        Long pedidoId = 1L;
+        com.fube.pedidos.modelos.ItemPedido item = com.fube.pedidos.modelos.ItemPedido.builder()
+                .id(10L)
+                .productoId(50L)
+                .cantidad(3)
+                .precioUnitario(new BigDecimal("200.00"))
+                .build();
+
+        Pedido pedido = Pedido.builder()
+                .id(pedidoId)
+                .clienteId(5L)
+                .estado(EstadoPedido.CREADO)
+                .montoTotal(new BigDecimal("600.00"))
+                .build();
+        pedido.addItem(item);
+
+        when(repositorio.findById(pedidoId)).thenReturn(java.util.Optional.of(pedido));
+        when(repositorio.save(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        PedidoResponseDTO response = pedidoServicio.cancelarPedido(pedidoId);
+
+        assertNotNull(response);
+        assertEquals(EstadoPedido.CANCELADO, response.getEstado());
+        verify(inventarioClient).liberarReserva(eq(pedidoId), anyList());
+        verify(repositorio).save(pedido);
+    }
+
+    @Test
+    void testCancelarPedido_EstadoConfirmado_Exitoso() {
+        Long pedidoId = 2L;
+        Pedido pedido = Pedido.builder()
+                .id(pedidoId)
+                .clienteId(5L)
+                .estado(EstadoPedido.CONFIRMADO)
+                .montoTotal(new BigDecimal("1200.00"))
+                .build();
+
+        when(repositorio.findById(pedidoId)).thenReturn(java.util.Optional.of(pedido));
+        when(repositorio.save(any(Pedido.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        PedidoResponseDTO response = pedidoServicio.cancelarPedido(pedidoId);
+
+        assertNotNull(response);
+        assertEquals(EstadoPedido.CANCELADO, response.getEstado());
+        verify(inventarioClient).liberarReserva(eq(pedidoId), anyList());
+        verify(repositorio).save(pedido);
+    }
+
+    @Test
+    void testCancelarPedido_EstadoInvalido_LanzaExcepcion() {
+        Long pedidoId = 3L;
+        Pedido pedido = Pedido.builder()
+                .id(pedidoId)
+                .clienteId(5L)
+                .estado(EstadoPedido.EXPIRADO)
+                .build();
+
+        when(repositorio.findById(pedidoId)).thenReturn(java.util.Optional.of(pedido));
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> pedidoServicio.cancelarPedido(pedidoId));
+        assertTrue(ex.getMessage().contains("EXPIRADO"));
+
+        verify(inventarioClient, never()).liberarReserva(any(), any());
+        verify(repositorio, never()).save(any());
+    }
+
+    @Test
+    void testCancelarPedido_NoEncontrado_LanzaExcepcion() {
+        Long pedidoId = 99L;
+        when(repositorio.findById(pedidoId)).thenReturn(java.util.Optional.empty());
+
+        RuntimeException ex = assertThrows(RuntimeException.class,
+                () -> pedidoServicio.cancelarPedido(pedidoId));
+        assertTrue(ex.getMessage().contains("no encontrado"));
+
+        verifyNoInteractions(inventarioClient);
+    }
 }

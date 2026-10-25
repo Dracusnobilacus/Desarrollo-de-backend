@@ -14,6 +14,8 @@ public interface PedidoServicio {
 
     PedidoResponseDTO crearPedido(Pedido pedido);
 
+    PedidoResponseDTO cancelarPedido(Long id);
+
     PedidoDTO crear(Pedido pedido);
 
     PedidoDTO buscarPorId(Long id);

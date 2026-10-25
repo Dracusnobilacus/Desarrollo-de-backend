@@ -134,6 +134,38 @@ public class PedidoServicioImpl implements PedidoServicio {
 
     @Override
     @Transactional
+    public PedidoResponseDTO cancelarPedido(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("El ID del pedido no puede ser nulo.");
+        }
+
+        Pedido pedido = repositorio.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pedido no encontrado con id: " + id));
+
+        // Validar que el pedido esté CREADO o CONFIRMADO
+        if (pedido.getEstado() != EstadoPedido.CREADO && pedido.getEstado() != EstadoPedido.CONFIRMADO) {
+            throw new IllegalStateException("No se puede cancelar el pedido con id " + id +
+                    " porque se encuentra en estado " + pedido.getEstado() +
+                    ". Solo se pueden cancelar pedidos en estado CREADO o CONFIRMADO.");
+        }
+
+        // Cambiar estado a CANCELADO
+        pedido.setEstado(EstadoPedido.CANCELADO);
+
+        // Llamar a InventarioClient.liberarReserva
+        List<ItemStockDTO> itemsParaLiberar = (pedido.getItems() != null) ? pedido.getItems().stream()
+                .map(item -> new ItemStockDTO(item.getProductoId(), item.getCantidad()))
+                .toList() : java.util.Collections.emptyList();
+
+        inventarioClient.liberarReserva(pedido.getId(), itemsParaLiberar);
+
+        // Guardar pedido actualizado
+        Pedido guardado = repositorio.save(pedido);
+        return PedidoMapper.toResponseDTO(guardado);
+    }
+
+    @Override
+    @Transactional
     public PedidoDTO crear(Pedido pedido) {
         PedidoResponseDTO response = crearPedido(pedido);
         return PedidoDTO.builder()

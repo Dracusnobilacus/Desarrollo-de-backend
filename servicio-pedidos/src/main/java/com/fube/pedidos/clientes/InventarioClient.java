@@ -126,4 +126,35 @@ public class InventarioClient {
     public boolean liberarStockItem(Long productoId, Integer cantidad) {
         return liberarStock(null, List.of(new ItemStockDTO(productoId, cantidad)));
     }
+
+    /**
+     * Libera la reserva de stock asociada a un pedido.
+     *
+     * @param pedidoId ID del pedido cuya reserva se desea liberar
+     * @param items    Lista de items asociados a la reserva
+     * @return true si la liberación fue exitosa
+     */
+    public boolean liberarReserva(Long pedidoId, List<ItemStockDTO> items) {
+        return liberarStock(pedidoId, items);
+    }
+
+    /**
+     * Libera la reserva de stock asociada a un pedido por su ID.
+     *
+     * @param pedidoId ID del pedido
+     * @return true si la liberación fue exitosa
+     */
+    public boolean liberarReserva(Long pedidoId) {
+        return liberarStock(pedidoId, List.of());
+    }
+
+    /**
+     * Libera la reserva de stock a partir del DTO de reserva.
+     *
+     * @param request Datos de la reserva
+     * @return true si la liberación fue exitosa
+     */
+    public boolean liberarReserva(ReservaStockRequestDTO request) {
+        return liberarStock(request);
+    }
 }

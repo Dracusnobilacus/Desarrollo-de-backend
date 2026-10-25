@@ -55,4 +55,9 @@ public class PedidoControlador {
         servicio.eliminar(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}/cancelar")
+    public ResponseEntity<com.fube.pedidos.dto.PedidoResponseDTO> cancelar(@PathVariable Long id) {
+        return ResponseEntity.ok(servicio.cancelarPedido(id));
+    }
 }
