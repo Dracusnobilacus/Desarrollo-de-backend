@@ -31,6 +31,11 @@ public class PedidoControlador {
         return ResponseEntity.ok(servicio.buscarPorId(id));
     }
 
+    @GetMapping("/cliente/{clienteId}")
+    public ResponseEntity<List<PedidoDTO>> buscarPorClienteId(@PathVariable Long clienteId) {
+        return ResponseEntity.ok(servicio.buscarPorClienteId(clienteId));
+    }
+
     @GetMapping
     public ResponseEntity<List<PedidoDTO>> buscarTodos(
             @RequestParam(required = false) Long clienteId,

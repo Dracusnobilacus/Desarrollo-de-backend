@@ -1,5 +1,6 @@
 package com.fube.clientes.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,7 +20,9 @@ public class PedidoDTO {
     private Long id;
     private Long clienteId;
     private String descripcion;
+    @JsonAlias("montoTotal")
     private BigDecimal total;
     private String estado;
+    @JsonAlias("fechaCreacion")
     private LocalDateTime fecha;
 }
