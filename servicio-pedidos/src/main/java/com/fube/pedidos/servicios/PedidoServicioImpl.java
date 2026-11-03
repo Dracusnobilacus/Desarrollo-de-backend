@@ -51,8 +51,12 @@ public class PedidoServicioImpl implements PedidoServicio {
 
         // 3. Establecer estado inicial y calcular monto total
         pedido.setEstado(EstadoPedido.CREADO);
-        pedido.setFechaCreacion(LocalDateTime.now());
-        pedido.setFechaActualizacion(LocalDateTime.now());
+        if (pedido.getFechaCreacion() == null) {
+            pedido.setFechaCreacion(LocalDateTime.now());
+        }
+        if (pedido.getFechaActualizacion() == null) {
+            pedido.setFechaActualizacion(LocalDateTime.now());
+        }
         pedido.calcularMontoTotal();
 
         // 4. Guardar preliminarmente para obtener el ID del pedido
@@ -122,6 +126,9 @@ public class PedidoServicioImpl implements PedidoServicio {
 
         if (pedido.getClienteId() != null) {
             existente.setClienteId(pedido.getClienteId());
+        }
+        if (pedido.getFechaCreacion() != null) {
+            existente.setFechaCreacion(pedido.getFechaCreacion());
         }
         if (pedido.getEstado() != null) {
             existente.setEstado(pedido.getEstado());

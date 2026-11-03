@@ -33,7 +33,7 @@ public class Pedido {
     @Column(name = "monto_total", nullable = false, precision = 12, scale = 2)
     private BigDecimal montoTotal;
 
-    @Column(name = "fecha_creacion", nullable = false, updatable = false)
+    @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
 
     @Column(name = "fecha_actualizacion", nullable = false)
