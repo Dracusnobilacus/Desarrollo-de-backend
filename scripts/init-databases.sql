@@ -12,3 +12,4 @@
 CREATE DATABASE clientesdb;
 CREATE DATABASE inventariodb;
 CREATE DATABASE pedidosdb;
+
