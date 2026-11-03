@@ -1,6 +1,7 @@
 package com.fube.clientes.servicios;
 
 import com.fube.clientes.dto.PedidoDTO;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -19,7 +20,15 @@ public class PedidoClient {
     public PedidoClient(RestClient.Builder restClientBuilder,
                         @Value("${pedidos.service.url:http://localhost:8082}") String pedidosUrl) {
         RestClient.Builder builder = restClientBuilder != null ? restClientBuilder : RestClient.builder();
-        this.restClient = builder.baseUrl(pedidosUrl).build();
+        this.restClient = builder.baseUrl(pedidosUrl)
+                .requestInterceptor((req, body, execution) -> {
+                    String traceId = MDC.get("traceId");
+                    if (traceId != null && !traceId.isBlank()) {
+                        req.getHeaders().add("X-Trace-Id", traceId);
+                    }
+                    return execution.execute(req, body);
+                })
+                .build();
     }
 
     public PedidoClient(String pedidosUrl) {

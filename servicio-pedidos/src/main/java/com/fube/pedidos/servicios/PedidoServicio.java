@@ -20,5 +20,7 @@ public interface PedidoServicio {
 
     PedidoDTO actualizar(Pedido pedido);
 
+    PedidoDTO cancelar(Long id);
+
     void eliminar(Long id);
 }

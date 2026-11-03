@@ -39,7 +39,8 @@ dependencies {
     testImplementation 'org.mock-server:mockserver-netty:5.15.0'
     testImplementation 'net.bytebuddy:byte-buddy:1.15.11'
     testImplementation 'net.bytebuddy:byte-buddy-agent:1.15.11'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'com.h2database:h2'
+testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 test {
@@ -72,3 +73,4 @@ jacocoTestCoverageVerification {
 check {
     dependsOn jacocoTestCoverageVerification
 }
+

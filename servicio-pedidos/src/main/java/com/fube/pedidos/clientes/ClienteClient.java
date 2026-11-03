@@ -1,8 +1,8 @@
 package com.fube.pedidos.clientes;
 
 import com.fube.pedidos.clientes.dto.ClienteResponseDTO;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
@@ -18,14 +18,18 @@ public class ClienteClient {
                          @Value("${clientes.url:http://localhost:8080}") String baseUrl) {
         this.restClient = builder
                 .baseUrl(baseUrl)
+                .requestInterceptor((req, body, execution) -> {
+                    String traceId = MDC.get("traceId");
+                    if (traceId != null && !traceId.isBlank()) {
+                        req.getHeaders().add("X-Trace-Id", traceId);
+                    }
+                    return execution.execute(req, body);
+                })
                 .build();
     }
 
     /**
      * Valida si existe un cliente por su ID en el microservicio de clientes (puerto 8080).
-     *
-     * @param clienteId ID del cliente a verificar
-     * @return true si el cliente existe (HTTP 2xx), false si no existe (HTTP 404)
      */
     public boolean existeCliente(Long clienteId) {
         if (clienteId == null) {
@@ -35,15 +39,7 @@ public class ClienteClient {
         try {
             return Boolean.TRUE.equals(restClient.get()
                     .uri("/api/clientes/{id}", clienteId)
-                    .exchange((request, response) -> {
-                        if (response.getStatusCode().is2xxSuccessful()) {
-                            return true;
-                        } else if (response.getStatusCode().value() == 404) {
-                            return false;
-                        } else {
-                            throw new RuntimeException("Respuesta inesperada de servicio-clientes: " + response.getStatusCode());
-                        }
-                    }));
+                    .exchange((request, response) -> response.getStatusCode().is2xxSuccessful()));
         } catch (RestClientResponseException e) {
             if (e.getStatusCode().value() == 404) {
                 return false;
@@ -56,9 +52,6 @@ public class ClienteClient {
 
     /**
      * Obtiene los datos del cliente desde el microservicio de clientes.
-     *
-     * @param clienteId ID del cliente
-     * @return Optional con ClienteResponseDTO si existe, o Optional.empty() si no existe
      */
     public Optional<ClienteResponseDTO> obtenerCliente(Long clienteId) {
         if (clienteId == null) {

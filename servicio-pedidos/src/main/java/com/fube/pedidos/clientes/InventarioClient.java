@@ -2,6 +2,7 @@ package com.fube.pedidos.clientes;
 
 import com.fube.pedidos.clientes.dto.ItemStockDTO;
 import com.fube.pedidos.clientes.dto.ReservaStockRequestDTO;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -9,6 +10,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class InventarioClient {
@@ -19,16 +21,62 @@ public class InventarioClient {
                             @Value("${inventario.url:http://localhost:8081}") String baseUrl) {
         this.restClient = builder
                 .baseUrl(baseUrl)
+                .requestInterceptor((req, body, execution) -> {
+                    String traceId = MDC.get("traceId");
+                    if (traceId != null && !traceId.isBlank()) {
+                        req.getHeaders().add("X-Trace-Id", traceId);
+                    }
+                    return execution.execute(req, body);
+                })
                 .build();
     }
 
     /**
-     * Llama al microservicio de inventario (puerto 8081) para reservar stock.
-     *
-     * @param request Datos de la reserva (pedidoId y lista de items con productoId y cantidad)
-     * @return true si la reserva fue exitosa (HTTP 2xx), false si no hay stock disponible (HTTP 400 / 409)
+     * Reserva stock para un ítem específico de un pedido en servicio-inventario.
+     */
+    public boolean reservarItem(Long pedidoId, Long productoId, Integer cantidad) {
+        if (pedidoId == null || productoId == null || cantidad == null || cantidad <= 0) {
+            return false;
+        }
+        try {
+            Map<String, Object> request = Map.of(
+                    "pedidoId", pedidoId,
+                    "productoId", productoId,
+                    "cantidad", cantidad
+            );
+            return Boolean.TRUE.equals(restClient.post()
+                    .uri("/api/inventario/reservas")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(request)
+                    .exchange((req, response) -> response.getStatusCode().is2xxSuccessful()));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Libera todas las reservas de stock asociadas a un pedido en servicio-inventario.
+     */
+    public boolean liberarReservasPorPedido(Long pedidoId) {
+        if (pedidoId == null) {
+            return false;
+        }
+        try {
+            return Boolean.TRUE.equals(restClient.put()
+                    .uri("/api/inventario/pedidos/{pedidoId}/liberar", pedidoId)
+                    .exchange((req, response) -> response.getStatusCode().is2xxSuccessful()));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Llama al microservicio de inventario para reservar stock en lote.
      */
     public boolean reservarStock(ReservaStockRequestDTO request) {
+        if (request == null || request.getItems() == null || request.getItems().isEmpty()) {
+            return false;
+        }
         try {
             return Boolean.TRUE.equals(restClient.post()
                     .uri("/api/inventario/reservar")
@@ -53,13 +101,6 @@ public class InventarioClient {
         }
     }
 
-    /**
-     * Sobrecarga para reservar stock pasando directamente pedidoId y lista de items.
-     *
-     * @param pedidoId ID del pedido
-     * @param items    Lista de items con productoId y cantidad
-     * @return true si la reserva fue exitosa
-     */
     public boolean reservarStock(Long pedidoId, List<ItemStockDTO> items) {
         return reservarStock(ReservaStockRequestDTO.builder()
                 .pedidoId(pedidoId)
@@ -67,37 +108,18 @@ public class InventarioClient {
                 .build());
     }
 
-    /**
-     * Llama al microservicio de inventario (puerto 8081) para liberar el stock reservado de un pedido.
-     *
-     * @param request Datos de la liberación de stock (pedidoId y lista de items)
-     * @return true si la liberación fue exitosa (HTTP 2xx)
-     */
     public boolean liberarStock(ReservaStockRequestDTO request) {
         try {
             return Boolean.TRUE.equals(restClient.post()
                     .uri("/api/inventario/liberar")
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(request)
-                    .exchange((req, response) -> {
-                        if (response.getStatusCode().is2xxSuccessful()) {
-                            return true;
-                        } else {
-                            throw new RuntimeException("Respuesta inesperada al liberar stock: " + response.getStatusCode());
-                        }
-                    }));
+                    .exchange((req, response) -> response.getStatusCode().is2xxSuccessful()));
         } catch (Exception e) {
             throw new RuntimeException("Error de conexión con servicio-inventario al liberar stock: " + e.getMessage(), e);
         }
     }
 
-    /**
-     * Sobrecarga para liberar stock pasando directamente pedidoId y lista de items.
-     *
-     * @param pedidoId ID del pedido
-     * @param items    Lista de items con productoId y cantidad
-     * @return true si la liberación fue exitosa
-     */
     public boolean liberarStock(Long pedidoId, List<ItemStockDTO> items) {
         return liberarStock(ReservaStockRequestDTO.builder()
                 .pedidoId(pedidoId)
