@@ -6,6 +6,10 @@ import com.fube.pedidos.modelos.EstadoPedido;
 import com.fube.pedidos.servicios.PedidoServicio;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,9 +22,15 @@ import java.util.List;
 public class PedidoControlador {
 
     private final PedidoServicio servicio;
+    private final JobLauncher jobLauncher;
+    private final Job expirarPedidosJob;
 
-    public PedidoControlador(PedidoServicio servicio) {
+    public PedidoControlador(PedidoServicio servicio,
+                             JobLauncher jobLauncher,
+                             Job expirarPedidosJob) {
         this.servicio = servicio;
+        this.jobLauncher = jobLauncher;
+        this.expirarPedidosJob = expirarPedidosJob;
     }
 
     @PostMapping
@@ -56,6 +66,12 @@ public class PedidoControlador {
         return ResponseEntity.ok(servicio.buscarTodos());
     }
 
+    @PutMapping("/{id}/confirmar")
+    @Operation(summary = "Confirmar un pedido", description = "Pasa un pedido de estado CREADO a CONFIRMADO")
+    public ResponseEntity<PedidoDTO> confirmar(@PathVariable Long id) {
+        return ResponseEntity.ok(servicio.confirmar(id));
+    }
+
     @PutMapping("/{id}/cancelar")
     @Operation(summary = "Cancelar un pedido", description = "Cancela un pedido en estado CREADO o CONFIRMADO y libera la reserva de stock en inventario")
     public ResponseEntity<PedidoDTO> cancelar(@PathVariable Long id) {
@@ -74,5 +90,16 @@ public class PedidoControlador {
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         servicio.eliminar(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/batch/expirar")
+    @Operation(summary = "Ejecutar manualmente el batch de expiración de pedidos",
+            description = "Dispara el job de Spring Batch para expirar pedidos en CREADO con más de 24hs y liberar stock en inventario")
+    public ResponseEntity<String> ejecutarBatch() throws Exception {
+        JobParameters params = new JobParametersBuilder()
+                .addLong("timestamp", System.currentTimeMillis())
+                .toJobParameters();
+        jobLauncher.run(expirarPedidosJob, params);
+        return ResponseEntity.ok("Batch de expiración ejecutado exitosamente");
     }
 }

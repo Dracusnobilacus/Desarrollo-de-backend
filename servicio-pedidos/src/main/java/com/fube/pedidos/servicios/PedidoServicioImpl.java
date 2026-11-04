@@ -173,6 +173,23 @@ public class PedidoServicioImpl implements PedidoServicio {
 
     @Override
     @Transactional
+    public PedidoDTO confirmar(Long id) {
+        Pedido pedido = repositorio.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Pedido no encontrado con ID: " + id));
+
+        if (pedido.getEstado() != EstadoPedido.CREADO) {
+            throw new IllegalStateException("Solo se pueden confirmar pedidos en estado CREADO. Estado actual: " + pedido.getEstado());
+        }
+
+        pedido.setEstado(EstadoPedido.CONFIRMADO);
+        pedido.setFechaActualizacion(LocalDateTime.now());
+        log.info("Pedido id={} confirmado exitosamente", id);
+
+        return PedidoMapper.toDTO(repositorio.save(pedido));
+    }
+
+    @Override
+    @Transactional
     public void eliminar(Long id) {
         if (!repositorio.existsById(id)) {
             throw new RecursoNoEncontradoException("Pedido no encontrado con ID: " + id);
