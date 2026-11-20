@@ -16,9 +16,21 @@ public class PedidosItemReader extends JpaPagingItemReader<Pedido> {
     public PedidosItemReader(EntityManagerFactory entityManagerFactory) {
         setName("pedidosItemReader");
         setEntityManagerFactory(entityManagerFactory);
-        setQueryString("SELECT p FROM Pedido p WHERE p.estado = com.fube.pedidos.modelos.EstadoPedido.CREADO AND p.fechaCreacion < :fechaLimite");
+        setQueryString("SELECT p FROM Pedido p WHERE p.estado = com.fube.pedidos.modelos.EstadoPedido.CREADO AND p.fechaCreacion < :fechaLimite ORDER BY p.id ASC");
         setParameterValues(Collections.singletonMap("fechaLimite", LocalDateTime.now().minusHours(24)));
         setPageSize(10);
+    }
+
+    @Override
+    protected void doOpen() throws Exception {
+        setParameterValues(Collections.singletonMap("fechaLimite", LocalDateTime.now().minusHours(24)));
+        super.doOpen();
+    }
+
+    @Override
+    public int getPage() {
+        // Como cada chunk cambia el estado de CREADO a EXPIRADO, siempre leemos la página 0 para no saltear registros
+        return 0;
     }
 
     @Override

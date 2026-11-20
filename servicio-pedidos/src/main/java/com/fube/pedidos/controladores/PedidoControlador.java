@@ -1,5 +1,6 @@
 package com.fube.pedidos.controladores;
 
+import com.fube.pedidos.dto.ActualizarPedidoRequestDTO;
 import com.fube.pedidos.dto.CrearPedidoRequestDTO;
 import com.fube.pedidos.dto.PedidoDTO;
 import com.fube.pedidos.mapper.PedidoMapper;
@@ -28,8 +29,8 @@ public class PedidoControlador {
     private final Job expirarPedidosJob;
 
     public PedidoControlador(PedidoServicio servicio,
-                             JobLauncher jobLauncher,
-                             Job expirarPedidosJob) {
+            JobLauncher jobLauncher,
+            Job expirarPedidosJob) {
         this.servicio = servicio;
         this.jobLauncher = jobLauncher;
         this.expirarPedidosJob = expirarPedidosJob;
@@ -44,21 +45,23 @@ public class PedidoControlador {
 
     @GetMapping("/{id}")
     @Operation(summary = "Consultar un pedido mediante su identificador")
-    public ResponseEntity<PedidoDTO> buscarPorId(@PathVariable Long id) {
+
+    public ResponseEntity<PedidoDTO> buscarPorId(@PathVariable("id") Long id) {
         return ResponseEntity.ok(servicio.buscarPorId(id));
     }
 
     @GetMapping("/cliente/{clienteId}")
     @Operation(summary = "Listar los pedidos de un cliente (consumido por servicio-clientes)")
-    public ResponseEntity<List<PedidoDTO>> buscarPorClienteId(@PathVariable Long clienteId) {
+
+    public ResponseEntity<List<PedidoDTO>> buscarPorClienteId(@PathVariable("clienteId") Long clienteId) {
         return ResponseEntity.ok(servicio.buscarPorClienteId(clienteId));
     }
 
     @GetMapping
     @Operation(summary = "Listar todos los pedidos o filtrar por cliente / estado")
     public ResponseEntity<List<PedidoDTO>> buscarTodos(
-            @RequestParam(required = false) Long clienteId,
-            @RequestParam(required = false) EstadoPedido estado) {
+            @RequestParam(name = "clienteId", required = false) Long clienteId,
+            @RequestParam(name = "estado", required = false) EstadoPedido estado) {
         if (clienteId != null) {
             return ResponseEntity.ok(servicio.buscarPorClienteId(clienteId));
         }
@@ -70,33 +73,35 @@ public class PedidoControlador {
 
     @PutMapping("/{id}/confirmar")
     @Operation(summary = "Confirmar un pedido", description = "Pasa un pedido de estado CREADO a CONFIRMADO")
-    public ResponseEntity<PedidoDTO> confirmar(@PathVariable Long id) {
+
+    public ResponseEntity<PedidoDTO> confirmar(@PathVariable("id") Long id) {
         return ResponseEntity.ok(servicio.confirmar(id));
     }
 
     @PutMapping("/{id}/cancelar")
     @Operation(summary = "Cancelar un pedido", description = "Cancela un pedido en estado CREADO o CONFIRMADO y libera la reserva de stock en inventario")
-    public ResponseEntity<PedidoDTO> cancelar(@PathVariable Long id) {
+
+    public ResponseEntity<PedidoDTO> cancelar(@PathVariable("id") Long id) {
         return ResponseEntity.ok(servicio.cancelar(id));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar datos de un pedido")
-    public ResponseEntity<PedidoDTO> actualizar(@PathVariable Long id, @RequestBody PedidoDTO pedidoDTO) {
-        pedidoDTO.setId(id);
-        return ResponseEntity.ok(servicio.actualizar(PedidoMapper.toEntity(pedidoDTO)));
+    public ResponseEntity<PedidoDTO> actualizar(@PathVariable("id") Long id,
+                                                @Valid @RequestBody ActualizarPedidoRequestDTO request) {
+        return ResponseEntity.ok(servicio.actualizar(PedidoMapper.toEntity(id, request)));
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Eliminar un pedido")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+
+    public ResponseEntity<Void> eliminar(@PathVariable("id") Long id) {
         servicio.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/batch/expirar")
-    @Operation(summary = "Ejecutar manualmente el batch de expiración de pedidos",
-            description = "Dispara el job de Spring Batch para expirar pedidos en CREADO con más de 24hs y liberar stock en inventario")
+    @Operation(summary = "Ejecutar manualmente el batch de expiración de pedidos", description = "Dispara el job de Spring Batch para expirar pedidos en CREADO con más de 24hs y liberar stock en inventario")
     public ResponseEntity<String> ejecutarBatch() throws Exception {
         JobParameters params = new JobParametersBuilder()
                 .addLong("timestamp", System.currentTimeMillis())

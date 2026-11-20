@@ -1,5 +1,6 @@
-package com.fube.pedidos.dto;
+package com.fube.clientes.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,10 +9,11 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class ItemPedidoResponseDTO {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class ItemPedidoDTO {
 
     private Long id;
     private Long productoId;

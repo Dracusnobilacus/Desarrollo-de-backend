@@ -1,7 +1,5 @@
 package com.fube.pedidos.clientes;
 
-import com.fube.pedidos.clientes.dto.ItemStockDTO;
-import com.fube.pedidos.clientes.dto.ReservaStockRequestDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
@@ -10,11 +8,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
@@ -31,47 +29,53 @@ class InventarioClientTest {
     }
 
     @Test
-    void testReservarStock_Exitoso() {
-        mockServer.expect(requestTo("http://localhost:8081/api/inventario/reservar"))
+    void testReservarItem_Exitoso() {
+        mockServer.expect(requestTo("http://localhost:8081/api/inventario/reservas"))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andRespond(withSuccess("{\"mensaje\":\"Stock reservado\"}", MediaType.APPLICATION_JSON));
+                .andRespond(withStatus(HttpStatus.CREATED)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body("{\"id\":1,\"productoId\":10,\"pedidoId\":1,\"cantidad\":2,\"estado\":\"ACTIVA\"}"));
 
-        List<ItemStockDTO> items = List.of(new ItemStockDTO(10L, 2));
-        boolean resultado = inventarioClient.reservarStock(1L, items);
+        boolean resultado = inventarioClient.reservarItem(1L, 10L, 2);
 
         assertTrue(resultado);
         mockServer.verify();
     }
 
     @Test
-    void testReservarStock_SinStock_RetornaFalse() {
-        mockServer.expect(requestTo("http://localhost:8081/api/inventario/reservar"))
+    void testReservarItem_SinStock_RetornaFalse() {
+        mockServer.expect(requestTo("http://localhost:8081/api/inventario/reservas"))
                 .andExpect(method(HttpMethod.POST))
                 .andRespond(withStatus(HttpStatus.CONFLICT));
 
-        List<ItemStockDTO> items = List.of(new ItemStockDTO(10L, 500));
-        boolean resultado = inventarioClient.reservarStock(1L, items);
+        boolean resultado = inventarioClient.reservarItem(1L, 10L, 500);
 
         assertFalse(resultado);
         mockServer.verify();
     }
 
     @Test
-    void testLiberarStock_Exitoso() {
-        mockServer.expect(requestTo("http://localhost:8081/api/inventario/liberar"))
-                .andExpect(method(HttpMethod.POST))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andRespond(withSuccess("{\"mensaje\":\"Stock liberado\"}", MediaType.APPLICATION_JSON));
+    void testLiberarReservasPorPedido_Exitoso() {
+        mockServer.expect(requestTo("http://localhost:8081/api/inventario/pedidos/1/liberar"))
+                .andExpect(method(HttpMethod.PUT))
+                .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
 
-        ReservaStockRequestDTO request = ReservaStockRequestDTO.builder()
-                .pedidoId(1L)
-                .items(List.of(new ItemStockDTO(10L, 2)))
-                .build();
-
-        boolean resultado = inventarioClient.liberarStock(request);
+        boolean resultado = inventarioClient.liberarReservasPorPedido(1L);
 
         assertTrue(resultado);
+        mockServer.verify();
+    }
+
+    @Test
+    void testLiberarReservasPorPedido_CuandoFalla_RetornaFalse() {
+        mockServer.expect(requestTo("http://localhost:8081/api/inventario/pedidos/99/liberar"))
+                .andExpect(method(HttpMethod.PUT))
+                .andRespond(withStatus(HttpStatus.NOT_FOUND));
+
+        boolean resultado = inventarioClient.liberarReservasPorPedido(99L);
+
+        assertFalse(resultado);
         mockServer.verify();
     }
 }

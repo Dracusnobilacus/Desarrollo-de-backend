@@ -54,6 +54,16 @@ class ClienteClientTest {
     }
 
     @Test
+    void testExisteCliente_CuandoHayErrorHttpDistintoDe404_LanzaExcepcion() {
+        mockServer.expect(requestTo("http://localhost:8080/api/clientes/3"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.BAD_REQUEST));
+
+        assertThrows(RuntimeException.class, () -> clienteClient.existeCliente(3L));
+        mockServer.verify();
+    }
+
+    @Test
     void testObtenerCliente_CuandoExiste() {
         mockServer.expect(requestTo("http://localhost:8080/api/clientes/2"))
                 .andExpect(method(HttpMethod.GET))

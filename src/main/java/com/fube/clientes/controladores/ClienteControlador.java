@@ -31,7 +31,8 @@ public class ClienteControlador {
 
     @GetMapping("/{id}")
     @Operation(summary = "Consultar datos de un cliente por id", description = "Retorna los datos de un cliente según su ID")
-    public ClienteDTO buscarPorId(@PathVariable Long id) {
+
+    public ClienteDTO buscarPorId(@PathVariable("id") Long id) {
         return servicio.buscarPorId(id);
     }
 
@@ -43,7 +44,8 @@ public class ClienteControlador {
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar cliente", description = "Actualiza los datos de un cliente existente por ID")
-    public ClienteDTO actualizar(@PathVariable Long id, @Valid @RequestBody ClienteDTO clienteDTO) {
+
+    public ClienteDTO actualizar(@PathVariable("id") Long id, @Valid @RequestBody ClienteDTO clienteDTO) {
         clienteDTO.setId(id);
         return servicio.actualizar(ClienteMapper.toEntity(clienteDTO));
     }
@@ -51,14 +53,15 @@ public class ClienteControlador {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Eliminar cliente", description = "Elimina el cliente correspondiente al ID indicado")
-    public void eliminar(@PathVariable Long id) {
+
+    public void eliminar(@PathVariable("id") Long id) {
         servicio.eliminar(id);
     }
 
     @GetMapping("/{id}/pedidos")
     @Operation(summary = "Consultar pedidos de un cliente", description = "Retorna los pedidos de un cliente determinado consultando de forma síncrona a servicio-pedidos")
-    public List<com.fube.clientes.dto.PedidoDTO> buscarPedidosPorCliente(@PathVariable Long id) {
+
+    public List<com.fube.clientes.dto.PedidoDTO> buscarPedidosPorCliente(@PathVariable("id") Long id) {
         return servicio.buscarPedidosPorCliente(id);
     }
 }
-

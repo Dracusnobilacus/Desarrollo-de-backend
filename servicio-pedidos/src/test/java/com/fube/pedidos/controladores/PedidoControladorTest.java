@@ -1,6 +1,7 @@
 package com.fube.pedidos.controladores;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fube.pedidos.dto.ActualizarPedidoRequestDTO;
 import com.fube.pedidos.dto.CrearPedidoRequestDTO;
 import com.fube.pedidos.dto.ItemPedidoDTO;
 import com.fube.pedidos.dto.ItemPedidoRequestDTO;
@@ -31,6 +32,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -118,5 +120,43 @@ class PedidoControladorTest {
                 .andExpect(jsonPath("$.mensaje").isNotEmpty());
 
         verifyNoInteractions(servicio);
+    }
+
+    @Test
+    @DisplayName("PUT /api/pedidos/{id} usa ActualizarPedidoRequestDTO sin id en body y toma el id del path")
+    void actualizar_conDatosValidos_tomaIdDelPath() throws Exception {
+        ActualizarPedidoRequestDTO request = ActualizarPedidoRequestDTO.builder()
+                .clienteId(2L)
+                .estado(EstadoPedido.CREADO)
+                .items(List.of(ItemPedidoRequestDTO.builder()
+                        .productoId(5L)
+                        .cantidad(2)
+                        .precioUnitario(new BigDecimal("250.00"))
+                        .build()))
+                .build();
+
+        PedidoDTO respuesta = PedidoDTO.builder()
+                .id(7L)
+                .clienteId(2L)
+                .estado(EstadoPedido.CREADO)
+                .montoTotal(new BigDecimal("500.00"))
+                .build();
+
+        when(servicio.actualizar(any(Pedido.class))).thenReturn(respuesta);
+
+        mockMvc.perform(put("/api/pedidos/{id}", 7L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(7L))
+                .andExpect(jsonPath("$.clienteId").value(2L));
+
+        ArgumentCaptor<Pedido> captor = ArgumentCaptor.forClass(Pedido.class);
+        verify(servicio).actualizar(captor.capture());
+        Pedido enviado = captor.getValue();
+        assertEquals(7L, enviado.getId());
+        assertEquals(2L, enviado.getClienteId());
+        assertEquals(1, enviado.getItems().size());
+        assertNull(enviado.getItems().get(0).getId());
     }
 }

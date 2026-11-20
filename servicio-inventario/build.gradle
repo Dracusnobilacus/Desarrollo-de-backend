@@ -12,6 +12,14 @@ java {
     sourceCompatibility = JavaVersion.VERSION_17
 }
 
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs.add('-parameters')
+}
+
+jacoco {
+    toolVersion = "0.8.14"
+}
+
 repositories {
     mavenCentral()
 }
@@ -29,9 +37,37 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'net.bytebuddy:byte-buddy:1.15.11'
+    testImplementation 'net.bytebuddy:byte-buddy-agent:1.15.11'
+    testRuntimeOnly 'com.h2database:h2'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 test {
     useJUnitPlatform()
+    jvmArgs '-Dnet.bytebuddy.experimental=true'
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+    }
+}
+
+jacocoTestCoverageVerification {
+    dependsOn jacocoTestReport
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.30
+            }
+        }
+    }
+}
+
+check {
+    dependsOn jacocoTestCoverageVerification
 }

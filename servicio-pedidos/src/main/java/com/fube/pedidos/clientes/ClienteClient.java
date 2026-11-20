@@ -15,7 +15,7 @@ public class ClienteClient {
     private final RestClient restClient;
 
     public ClienteClient(RestClient.Builder builder,
-                         @Value("${clientes.url:http://localhost:8080}") String baseUrl) {
+            @Value("${clientes.url:http://localhost:8080}") String baseUrl) {
         this.restClient = builder
                 .baseUrl(baseUrl)
                 .requestInterceptor((req, body, execution) -> {
@@ -37,14 +37,17 @@ public class ClienteClient {
         }
 
         try {
-            return Boolean.TRUE.equals(restClient.get()
+            restClient.get()
                     .uri("/api/clientes/{id}", clienteId)
-                    .exchange((request, response) -> response.getStatusCode().is2xxSuccessful()));
+                    .retrieve()
+                    .toBodilessEntity();
+            return true;
         } catch (RestClientResponseException e) {
             if (e.getStatusCode().value() == 404) {
                 return false;
             }
-            throw new RuntimeException("Error al consultar servicio-clientes: " + e.getMessage(), e);
+            throw new RuntimeException("Error al consultar servicio-clientes (HTTP "
+                    + e.getStatusCode().value() + "): " + e.getResponseBodyAsString(), e);
         } catch (Exception e) {
             throw new RuntimeException("Error de conexión con servicio-clientes en puerto 8080: " + e.getMessage(), e);
         }

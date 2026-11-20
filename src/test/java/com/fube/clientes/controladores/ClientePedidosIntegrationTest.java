@@ -78,16 +78,36 @@ class ClientePedidosIntegrationTest {
                     {
                         "id": 101,
                         "clienteId": %d,
-                        "descripcion": "Teclado mecanico",
-                        "total": 45.99,
-                        "estado": "COMPLETADO"
+                        "estado": "CONFIRMADO",
+                        "montoTotal": 45.99,
+                        "fechaCreacion": "2026-11-20T18:00:00",
+                        "fechaActualizacion": "2026-11-20T18:05:00",
+                        "items": [
+                            {
+                                "id": 1,
+                                "productoId": 10,
+                                "cantidad": 1,
+                                "precioUnitario": 45.99,
+                                "subtotal": 45.99
+                            }
+                        ]
                     },
                     {
                         "id": 102,
                         "clienteId": %d,
-                        "descripcion": "Mouse inalambrico",
-                        "total": 19.50,
-                        "estado": "ENVIADO"
+                        "estado": "CREADO",
+                        "montoTotal": 19.50,
+                        "fechaCreacion": "2026-11-20T19:00:00",
+                        "fechaActualizacion": "2026-11-20T19:00:00",
+                        "items": [
+                            {
+                                "id": 2,
+                                "productoId": 11,
+                                "cantidad": 2,
+                                "precioUnitario": 9.75,
+                                "subtotal": 19.50
+                            }
+                        ]
                     }
                 ]
                 """.formatted(clienteId, clienteId);
@@ -112,11 +132,13 @@ class ClientePedidosIntegrationTest {
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id").value(101))
                 .andExpect(jsonPath("$[0].clienteId").value(clienteId))
-                .andExpect(jsonPath("$[0].descripcion").value("Teclado mecanico"))
-                .andExpect(jsonPath("$[0].total").value(45.99))
-                .andExpect(jsonPath("$[0].estado").value("COMPLETADO"))
+                .andExpect(jsonPath("$[0].estado").value("CONFIRMADO"))
+                .andExpect(jsonPath("$[0].montoTotal").value(45.99))
+                .andExpect(jsonPath("$[0].items", hasSize(1)))
+                .andExpect(jsonPath("$[0].items[0].productoId").value(10))
                 .andExpect(jsonPath("$[1].id").value(102))
-                .andExpect(jsonPath("$[1].descripcion").value("Mouse inalambrico"));
+                .andExpect(jsonPath("$[1].estado").value("CREADO"))
+                .andExpect(jsonPath("$[1].items[0].cantidad").value(2));
 
         // Verificamos que se haya invocado a MockServer exactamente 1 vez
         mockServer.verify(

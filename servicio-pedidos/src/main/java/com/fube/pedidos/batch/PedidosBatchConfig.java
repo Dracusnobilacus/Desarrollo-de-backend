@@ -7,10 +7,15 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.job.builder.JobBuilder;
+import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.autoconfigure.batch.JobLauncherApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -18,6 +23,20 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Slf4j
 @Configuration
 public class PedidosBatchConfig {
+
+    @Bean
+    @ConditionalOnProperty(name = "spring.batch.job.enabled", havingValue = "true")
+    public JobLauncherApplicationRunner jobLauncherApplicationRunner(JobLauncher jobLauncher,
+                                                                     JobExplorer jobExplorer,
+                                                                     JobRepository jobRepository) {
+        // Evita la doble ejecución automática de Spring Boot; el job se lanza únicamente vía PedidosJobRunner (CommandLineRunner)
+        return new JobLauncherApplicationRunner(jobLauncher, jobExplorer, jobRepository) {
+            @Override
+            public void run(ApplicationArguments args) {
+                // Intencionalmente vacío: delega la ejecución a PedidosJobRunner
+            }
+        };
+    }
 
     @Bean
     public Step expirarPedidosStep(JobRepository jobRepository,

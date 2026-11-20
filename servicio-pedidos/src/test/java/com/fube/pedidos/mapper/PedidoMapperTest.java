@@ -39,39 +39,34 @@ class PedidoMapperTest {
     }
 
     @Test
-    void testEntityToPedidoResponseDTO() {
-        LocalDateTime now = LocalDateTime.now();
-        Pedido pedido = Pedido.builder()
-                .id(10L)
-                .clienteId(7L)
-                .estado(EstadoPedido.CREADO)
-                .montoTotal(new BigDecimal("500.00"))
-                .fechaCreacion(now)
-                .fechaActualizacion(now)
-                .build();
-
-        ItemPedido item = ItemPedido.builder()
-                .id(1L)
+    void testActualizarPedidoRequestDTOToEntity() {
+        LocalDateTime fecha = LocalDateTime.of(2026, 11, 18, 10, 0);
+        ItemPedidoRequestDTO itemReq = ItemPedidoRequestDTO.builder()
                 .productoId(100L)
                 .cantidad(2)
                 .precioUnitario(new BigDecimal("250.00"))
                 .build();
-        pedido.addItem(item);
 
-        PedidoResponseDTO response = PedidoMapper.toResponseDTO(pedido);
+        ActualizarPedidoRequestDTO request = ActualizarPedidoRequestDTO.builder()
+                .clienteId(7L)
+                .estado(EstadoPedido.CREADO)
+                .montoTotal(new BigDecimal("500.00"))
+                .fechaCreacion(fecha)
+                .items(List.of(itemReq))
+                .build();
 
-        assertNotNull(response);
-        assertEquals(10L, response.getId());
-        assertEquals(7L, response.getClienteId());
-        assertEquals(EstadoPedido.CREADO, response.getEstado());
-        assertEquals(new BigDecimal("500.00"), response.getMontoTotal());
-        assertEquals(now, response.getFechaCreacion());
-        assertEquals(now, response.getFechaActualizacion());
-        assertEquals(1, response.getItems().size());
-        assertEquals(1L, response.getItems().get(0).getId());
-        assertEquals(100L, response.getItems().get(0).getProductoId());
-        assertEquals(2, response.getItems().get(0).getCantidad());
-        assertEquals(new BigDecimal("500.00"), response.getItems().get(0).getSubtotal());
+        Pedido entity = PedidoMapper.toEntity(10L, request);
+
+        assertNotNull(entity);
+        assertEquals(10L, entity.getId());
+        assertEquals(7L, entity.getClienteId());
+        assertEquals(EstadoPedido.CREADO, entity.getEstado());
+        assertEquals(new BigDecimal("500.00"), entity.getMontoTotal());
+        assertEquals(fecha, entity.getFechaCreacion());
+        assertEquals(1, entity.getItems().size());
+        assertNull(entity.getItems().get(0).getId());
+        assertEquals(100L, entity.getItems().get(0).getProductoId());
+        assertEquals(2, entity.getItems().get(0).getCantidad());
     }
 
     @Test
