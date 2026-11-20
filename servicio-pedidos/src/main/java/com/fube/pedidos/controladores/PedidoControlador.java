@@ -1,11 +1,13 @@
 package com.fube.pedidos.controladores;
 
+import com.fube.pedidos.dto.CrearPedidoRequestDTO;
 import com.fube.pedidos.dto.PedidoDTO;
 import com.fube.pedidos.mapper.PedidoMapper;
 import com.fube.pedidos.modelos.EstadoPedido;
 import com.fube.pedidos.servicios.PedidoServicio;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -35,8 +37,8 @@ public class PedidoControlador {
 
     @PostMapping
     @Operation(summary = "Crear un pedido", description = "Verifica cliente, reserva stock de cada ítem, calcula total y registra el pedido")
-    public ResponseEntity<PedidoDTO> crear(@RequestBody PedidoDTO pedidoDTO) {
-        PedidoDTO creado = servicio.crear(PedidoMapper.toEntity(pedidoDTO));
+    public ResponseEntity<PedidoDTO> crear(@Valid @RequestBody CrearPedidoRequestDTO request) {
+        PedidoDTO creado = servicio.crear(PedidoMapper.toEntity(request));
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 
