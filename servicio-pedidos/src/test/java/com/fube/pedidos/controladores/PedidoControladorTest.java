@@ -1,6 +1,7 @@
 package com.fube.pedidos.controladores;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fube.pedidos.dto.ActualizarEstadoPedidoRequestDTO;
 import com.fube.pedidos.dto.ActualizarPedidoRequestDTO;
 import com.fube.pedidos.dto.CrearPedidoRequestDTO;
 import com.fube.pedidos.dto.ItemPedidoDTO;
@@ -31,6 +32,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -158,5 +160,53 @@ class PedidoControladorTest {
         assertEquals(2L, enviado.getClienteId());
         assertEquals(1, enviado.getItems().size());
         assertNull(enviado.getItems().get(0).getId());
+    }
+
+    @Test
+    @DisplayName("PATCH /api/pedidos/{id}/estado con CONFIRMADO delega en confirmar")
+    void actualizarEstado_confirmado_retornaOk() throws Exception {
+        ActualizarEstadoPedidoRequestDTO request = new ActualizarEstadoPedidoRequestDTO(EstadoPedido.CONFIRMADO);
+        PedidoDTO respuesta = PedidoDTO.builder().id(7L).estado(EstadoPedido.CONFIRMADO).build();
+
+        when(servicio.confirmar(7L)).thenReturn(respuesta);
+
+        mockMvc.perform(patch("/api/pedidos/{id}/estado", 7L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("CONFIRMADO"));
+
+        verify(servicio).confirmar(7L);
+    }
+
+    @Test
+    @DisplayName("PATCH /api/pedidos/{id}/estado con CANCELADO delega en cancelar")
+    void actualizarEstado_cancelado_retornaOk() throws Exception {
+        ActualizarEstadoPedidoRequestDTO request = new ActualizarEstadoPedidoRequestDTO(EstadoPedido.CANCELADO);
+        PedidoDTO respuesta = PedidoDTO.builder().id(7L).estado(EstadoPedido.CANCELADO).build();
+
+        when(servicio.cancelar(7L)).thenReturn(respuesta);
+
+        mockMvc.perform(patch("/api/pedidos/{id}/estado", 7L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("CANCELADO"));
+
+        verify(servicio).cancelar(7L);
+    }
+
+    @Test
+    @DisplayName("PATCH /api/pedidos/{id}/estado con estado no permitido retorna 400 BAD REQUEST")
+    void actualizarEstado_noPermitido_retornaBadRequest() throws Exception {
+        ActualizarEstadoPedidoRequestDTO request = new ActualizarEstadoPedidoRequestDTO(EstadoPedido.EXPIRADO);
+
+        mockMvc.perform(patch("/api/pedidos/{id}/estado", 7L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
+
+        verifyNoInteractions(servicio);
     }
 }

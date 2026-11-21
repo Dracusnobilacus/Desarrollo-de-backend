@@ -57,8 +57,8 @@ class InventarioClientTest {
 
     @Test
     void testLiberarReservasPorPedido_Exitoso() {
-        mockServer.expect(requestTo("http://localhost:8081/api/inventario/pedidos/1/liberar"))
-                .andExpect(method(HttpMethod.PUT))
+        mockServer.expect(requestTo("http://localhost:8081/api/inventario/pedidos/1/reservas"))
+                .andExpect(method(HttpMethod.DELETE))
                 .andRespond(withSuccess("[]", MediaType.APPLICATION_JSON));
 
         boolean resultado = inventarioClient.liberarReservasPorPedido(1L);
@@ -69,8 +69,8 @@ class InventarioClientTest {
 
     @Test
     void testLiberarReservasPorPedido_CuandoFalla_RetornaFalse() {
-        mockServer.expect(requestTo("http://localhost:8081/api/inventario/pedidos/99/liberar"))
-                .andExpect(method(HttpMethod.PUT))
+        mockServer.expect(requestTo("http://localhost:8081/api/inventario/pedidos/99/reservas"))
+                .andExpect(method(HttpMethod.DELETE))
                 .andRespond(withStatus(HttpStatus.NOT_FOUND));
 
         boolean resultado = inventarioClient.liberarReservasPorPedido(99L);

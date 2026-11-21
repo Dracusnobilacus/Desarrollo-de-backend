@@ -58,8 +58,8 @@ public class InventarioClient {
             return false;
         }
         try {
-            return Boolean.TRUE.equals(restClient.put()
-                    .uri("/api/inventario/pedidos/{pedidoId}/liberar", pedidoId)
+            return Boolean.TRUE.equals(restClient.delete()
+                    .uri("/api/inventario/pedidos/{pedidoId}/reservas", pedidoId)
                     .exchange((req, response) -> response.getStatusCode().is2xxSuccessful()));
         } catch (Exception e) {
             return false;

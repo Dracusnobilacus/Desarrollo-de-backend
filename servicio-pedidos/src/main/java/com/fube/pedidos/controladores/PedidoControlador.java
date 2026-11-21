@@ -1,5 +1,6 @@
 package com.fube.pedidos.controladores;
 
+import com.fube.pedidos.dto.ActualizarEstadoPedidoRequestDTO;
 import com.fube.pedidos.dto.ActualizarPedidoRequestDTO;
 import com.fube.pedidos.dto.CrearPedidoRequestDTO;
 import com.fube.pedidos.dto.PedidoDTO;
@@ -71,18 +72,19 @@ public class PedidoControlador {
         return ResponseEntity.ok(servicio.buscarTodos());
     }
 
-    @PutMapping("/{id}/confirmar")
-    @Operation(summary = "Confirmar un pedido", description = "Pasa un pedido de estado CREADO a CONFIRMADO")
-
-    public ResponseEntity<PedidoDTO> confirmar(@PathVariable("id") Long id) {
-        return ResponseEntity.ok(servicio.confirmar(id));
-    }
-
-    @PutMapping("/{id}/cancelar")
-    @Operation(summary = "Cancelar un pedido", description = "Cancela un pedido en estado CREADO o CONFIRMADO y libera la reserva de stock en inventario")
-
-    public ResponseEntity<PedidoDTO> cancelar(@PathVariable("id") Long id) {
-        return ResponseEntity.ok(servicio.cancelar(id));
+    @PatchMapping("/{id}/estado")
+    @Operation(summary = "Actualizar el estado de un pedido",
+            description = "Permite confirmar (CONFIRMADO) o cancelar (CANCELADO) un pedido, liberando la reserva de stock en inventario al cancelar")
+    public ResponseEntity<PedidoDTO> actualizarEstado(@PathVariable("id") Long id,
+                                                      @Valid @RequestBody ActualizarEstadoPedidoRequestDTO request) {
+        if (request.getEstado() == EstadoPedido.CONFIRMADO) {
+            return ResponseEntity.ok(servicio.confirmar(id));
+        }
+        if (request.getEstado() == EstadoPedido.CANCELADO) {
+            return ResponseEntity.ok(servicio.cancelar(id));
+        }
+        throw new IllegalArgumentException("Transición de estado no permitida: " + request.getEstado()
+                + ". Estados válidos: CONFIRMADO, CANCELADO");
     }
 
     @PutMapping("/{id}")
@@ -94,13 +96,12 @@ public class PedidoControlador {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Eliminar un pedido")
-
     public ResponseEntity<Void> eliminar(@PathVariable("id") Long id) {
         servicio.eliminar(id);
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/batch/expirar")
+    @PostMapping("/batch/expiraciones")
     @Operation(summary = "Ejecutar manualmente el batch de expiración de pedidos", description = "Dispara el job de Spring Batch para expirar pedidos en CREADO con más de 24hs y liberar stock en inventario")
     public ResponseEntity<String> ejecutarBatch() throws Exception {
         JobParameters params = new JobParametersBuilder()

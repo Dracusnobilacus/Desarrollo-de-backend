@@ -8,10 +8,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,13 +48,13 @@ public class InventarioControlador {
         return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
     }
 
-    @PutMapping("/reservas/{id}/liberar")
+    @DeleteMapping("/reservas/{id}")
     @Operation(summary = "Liberar una reserva existente por su ID")
     public ResponseEntity<ReservaResponseDTO> liberarReserva(@PathVariable("id") Long id) {
         return ResponseEntity.ok(servicio.liberarReserva(id));
     }
 
-    @PutMapping("/pedidos/{pedidoId}/liberar")
+    @DeleteMapping("/pedidos/{pedidoId}/reservas")
     @Operation(summary = "Liberar todas las reservas asociadas a un pedido")
     public ResponseEntity<List<ReservaResponseDTO>> liberarReservasPorPedido(@PathVariable("pedidoId") Long pedidoId) {
         return ResponseEntity.ok(servicio.liberarReservasPorPedido(pedidoId));

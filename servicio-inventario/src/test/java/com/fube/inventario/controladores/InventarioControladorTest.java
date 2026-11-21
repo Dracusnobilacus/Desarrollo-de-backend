@@ -22,9 +22,9 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -95,12 +95,23 @@ class InventarioControladorTest {
     }
 
     @Test
-    @DisplayName("PUT /api/inventario/pedidos/{pedidoId}/liberar retorna 200 OK")
+    @DisplayName("DELETE /api/inventario/reservas/{id} retorna 200 OK")
+    void liberarReserva_retornaOk() throws Exception {
+        ReservaResponseDTO liberada = new ReservaResponseDTO(5L, 1L, "Mouse", 10L, 2, EstadoReserva.LIBERADA);
+        when(servicio.liberarReserva(5L)).thenReturn(liberada);
+
+        mockMvc.perform(delete("/api/inventario/reservas/{id}", 5L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("LIBERADA"));
+    }
+
+    @Test
+    @DisplayName("DELETE /api/inventario/pedidos/{pedidoId}/reservas retorna 200 OK")
     void liberarReservasPorPedido_retornaOk() throws Exception {
         ReservaResponseDTO liberada = new ReservaResponseDTO(5L, 1L, "Mouse", 10L, 2, EstadoReserva.LIBERADA);
         when(servicio.liberarReservasPorPedido(10L)).thenReturn(List.of(liberada));
 
-        mockMvc.perform(put("/api/inventario/pedidos/{pedidoId}/liberar", 10L))
+        mockMvc.perform(delete("/api/inventario/pedidos/{pedidoId}/reservas", 10L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].estado").value("LIBERADA"));
     }
