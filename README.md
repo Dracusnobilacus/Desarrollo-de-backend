@@ -1,94 +1,54 @@
-# Clientes
+Desarrollo de Backend
 
-CRUD de clientes desarrollado con Spring Boot.
+Sistema backend basado en microservicios desarrollado con Java y Spring Boot para la gestion de clientes, inventario y pedidos.
 
-## Tecnologías
+Microservicios
+
+- Clientes: ubicado en la raiz del proyecto, corre en el puerto 8080 y usa la base de datos "clientesdb". Se encarga de la gestion de clientes y del proceso batch de normalizacion de datos.
+- Inventario: ubicado en la carpeta "servicio-inventario", corre en el puerto 8081 y usa la base de datos "inventariodb". Se encarga de la gestion de productos, stock y reservas.
+- Pedidos: ubicado en la carpeta "servicio-pedidos", corre en el puerto 8082 y usa la base de datos "pedidosdb". Se encarga de la creacion y seguimiento de pedidos, la integracion con Clientes e Inventario, y el proceso batch de expiracion.
+
+Tecnologias
 
 - Java 17
 - Spring Boot 3.3
 - Spring Data JPA
 - Spring Batch
 - Flyway
-- Lombok
 - PostgreSQL
+- Gradle
+- Lombok
 - Springdoc OpenAPI (Swagger)
 
-## Estructura del proyecto
+Requisitos previos
 
-```
-com.fube.clientes
-├── batch            # Job, Step, Reader, Processor y Writer de Spring Batch
-├── controladores    # Capa REST
-├── dto              # Objetos de transferencia de datos
-├── mapper           # Conversión entre entidad y DTO
-├── modelos          # Entidades JPA
-├── repositorio      # Acceso a datos (Spring Data JPA)
-└── servicios        # Lógica de negocio
-```
+- Java 17
+- PostgreSQL corriendo en localhost puerto 5432 con usuario "postgres" y contrasena "postgres"
 
-## Endpoints
+Base de datos
 
-| Método | URL | Descripción |
-|--------|-----|-------------|
-| `GET` | `/api/clientes` | Listar todos los clientes |
-| `GET` | `/api/clientes/{id}` | Obtener cliente por ID |
-| `POST` | `/api/clientes` | Crear cliente |
-| `PUT` | `/api/clientes/{id}` | Actualizar cliente |
-| `DELETE` | `/api/clientes/{id}` | Eliminar cliente |
+Antes de iniciar los servicios por primera vez, ejecutar el script ubicado en "scripts/init-databases.sql" sobre PostgreSQL para crear las tres bases de datos: "clientesdb", "inventariodb" y "pedidosdb".
 
-## Migraciones
+Las tablas y los datos iniciales se crean automaticamente con Flyway al levantar cada microservicio.
 
-Las migraciones se gestionan con Flyway y se ejecutan automáticamente al iniciar la aplicación.
+Como ejecutar el proyecto
 
-| Versión | Descripción |
-|---------|-------------|
-| `V1` | Creación de la tabla `clientes` |
-| `V2` | Seed de 92 clientes |
+Cada microservicio se levanta de forma independiente desde su carpeta usando Gradle:
 
-## Batch job
+1. Servicio de Clientes (puerto 8080): ejecutar "./gradlew bootRun" desde la raiz del proyecto.
+2. Servicio de Inventario (puerto 8081): entrar en "servicio-inventario" y ejecutar "./gradlew bootRun".
+3. Servicio de Pedidos (puerto 8082): entrar en "servicio-pedidos" y ejecutar "./gradlew bootRun".
 
-El job `fillClientesJob` recorre todos los clientes que tienen teléfono o domicilio nulo y les asigna un valor por defecto.
+En Windows se puede usar ".\gradlew.bat bootRun".
 
-| Campo | Valor por defecto |
-|-------|-------------------|
-| `telefono` | `0000-0000` |
-| `direccion` | `Sin domicilio` |
+Tests
 
-El job no se ejecuta automáticamente al iniciar la aplicación (`spring.batch.job.enabled=false`).
+Para ejecutar los tests de cada microservicio, correr "./gradlew test" dentro de su carpeta correspondiente.
 
-## Cómo correr el proyecto
+Documentacion de la API
 
-```bash
-./gradlew bootRun
-```
+Con los servicios en ejecucion, la documentacion de Swagger queda disponible en:
 
-## Documentación API
-
-Con la aplicación corriendo, accedé a la UI de Swagger en:
-
-```
-http://localhost:8080/swagger-ui.html
-```
-
-## Base de datos con Docker
-
-Levantá un contenedor de PostgreSQL con las credenciales que usa la aplicación:
-
-```bash
-docker run --name clientes-db \
-  -e POSTGRES_DB=clientesdb \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -p 5432:5432 \
-  -v clientes-db-data:/var/lib/postgresql/data \
-  --restart unless-stopped \
-  -d postgres:16
-```
-
-| Parámetro | Valor |
-|-----------|-------|
-| Host | `localhost` |
-| Puerto | `5432` |
-| Base de datos | `clientesdb` |
-| Usuario | `postgres` |
-| Contraseña | `postgres` |
+- Clientes: http://localhost:8080/swagger-ui.html
+- Inventario: http://localhost:8081/swagger-ui.html
+- Pedidos: http://localhost:8082/swagger-ui.html
